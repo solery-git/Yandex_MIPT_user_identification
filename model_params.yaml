@@ -1,0 +1,21 @@
+meta:
+    seed: 17
+
+featurize:
+    sites_vectorizer:
+        method: 'tfidf'
+        params:
+            ngram_range: [1, 5]
+            max_features: 50000
+    
+    feature_types:
+        prepared: []
+        categorical:
+            - 'time_of_day'
+        to_log: []
+        to_scale_standard: 
+            - 'session_timespan'
+        to_scale_maxabs: 
+            - 'day_of_week'
+            - 'year_month'
+

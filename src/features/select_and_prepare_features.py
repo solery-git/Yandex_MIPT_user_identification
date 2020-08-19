@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pickle
+import yaml
 from pathlib import Path
 from collections import Counter
 import numpy as np
@@ -12,6 +13,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_RAW = 'data/raw'
 PATH_INTERIM = 'data/interim'
 PATH_PROCESSED = 'data/processed'
+PARAMS = yaml.safe_load(open(PROJECT_DIR.joinpath('model_params.yaml')))['featurize']
 
 
 def csr_hstack(arglist):
@@ -80,17 +82,10 @@ def main():
         site_dic = pickle.load(fin)
     
     
-    feature_types = {'prepared': [],
-                     'categorical': ['time_of_day', 
-                                    ], 
-                     'to_log': [], 
-                     'to_scale_standard': ['session_timespan'], 
-                     'to_scale_maxabs': ['day_of_week', 'year_month']
-                    }
-    
-    vectorizer_params = {'ngram_range': (1, 5), 'max_features': 50000, 'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
-    X_train_test_sparse = csr_hstack([#sparsify_data(sites_train_test.values, vectorizer_params, site_dic, train_size), 
-                                      sparsify_data(sites_train_test.values, vectorizer_params, site_dic, train_size, method='tfidf'), 
+    feature_types = PARAMS['feature_types']
+    vec_method = PARAMS['sites_vectorizer']['method']
+    vec_params = {**PARAMS['sites_vectorizer']['params'], 'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
+    X_train_test_sparse = csr_hstack([sparsify_data(sites_train_test.values, vec_params, site_dic, train_size, method=vec_method), 
                                       #encode_sites_with_time_diffs(sites_train_test, timestamps_train_test), 
                                       #make_site_names(sites_train_test, site_dic, method='tfidf'), 
                                       prepare_features(features_train_test, feature_types)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pickle
+import yaml
 from pathlib import Path
 from collections import Counter
 import numpy as np
@@ -10,7 +11,7 @@ from sklearn.metrics import roc_auc_score
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
-SEED = 17
+SEED = yaml.safe_load(open(PROJECT_DIR.joinpath('model_params.yaml')))['meta']['seed']
 
 
 def main():
