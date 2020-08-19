@@ -18,22 +18,22 @@ def main():
     train_df = train_df.sort_values(by='time1')
     
     train_test_df = pd.concat([train_df, test_df], sort=False)
-    train_test_df_sites = train_test_df[['site%d' % i for i in range(1, 11)]].fillna(0).astype('int')
-    train_test_df_timestamps = train_test_df[['time%d' % i for i in range(1, 11)]].fillna(np.datetime64('NaT')).astype(np.datetime64)
+    sites_train_test = train_test_df[['site%d' % i for i in range(1, 11)]].fillna(0).astype('int')
+    timestamps_train_test = train_test_df[['time%d' % i for i in range(1, 11)]].fillna(np.datetime64('NaT')).astype(np.datetime64)
     y = train_df['target'].astype('int').values
     
     
-    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'sites.pkl'), 'wb') as sites_pkl:
-        pickle.dump(train_test_df_sites, sites_pkl, protocol=2)
+    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'sites_train_test.pkl'), 'wb') as fout:
+        pickle.dump(sites_train_test, fout, protocol=2)
     
-    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'timestamps.pkl'), 'wb') as timestamps_pkl:
-        pickle.dump(train_test_df_timestamps, timestamps_pkl, protocol=2)
+    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'timestamps_train_test.pkl'), 'wb') as fout:
+        pickle.dump(timestamps_train_test, fout, protocol=2)
     
-    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'train_size.pkl'), 'wb') as train_size_pkl:
-        pickle.dump(len(train_df), train_size_pkl, protocol=2)
+    with open(PROJECT_DIR.joinpath(PATH_INTERIM, 'train_size.pkl'), 'wb') as fout:
+        pickle.dump(len(train_df), fout, protocol=2)
     
-    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'wb') as y_pkl:
-        pickle.dump(y, y_pkl, protocol=2)
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'wb') as fout:
+        pickle.dump(y, fout, protocol=2)
     
 
 if __name__ == '__main__':

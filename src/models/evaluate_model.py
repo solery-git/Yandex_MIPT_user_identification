@@ -14,14 +14,14 @@ SEED = 17
 
 
 def main():
-    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as X_train_pkl:
-        X_train_sparse = pickle.load(X_train_pkl)
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as fin:
+        X_train_sparse = pickle.load(fin)
     
-    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_test.pkl'), 'rb') as X_test_pkl:
-        X_test_sparse = pickle.load(X_test_pkl)
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_test.pkl'), 'rb') as fin:
+        X_test_sparse = pickle.load(fin)
     
-    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'rb') as y_pkl:
-        y = pickle.load(y_pkl)
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'rb') as fin:
+        y = pickle.load(fin)
     
     
     train_share = int(.7 * X_train_sparse.shape[0])
