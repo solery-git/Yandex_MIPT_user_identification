@@ -13,7 +13,7 @@ PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_RAW = 'data/raw'
 PATH_INTERIM = 'data/interim'
 PATH_PROCESSED = 'data/processed'
-PARAMS = yaml.safe_load(open(PROJECT_DIR.joinpath('model_params.yaml')))['featurize']
+PARAMS = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))['featurize']
 
 
 def csr_hstack(arglist):

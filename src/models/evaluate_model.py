@@ -11,7 +11,7 @@ from sklearn.metrics import roc_auc_score
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
-SEED = yaml.safe_load(open(PROJECT_DIR.joinpath('model_params.yaml')))['meta']['seed']
+SEED = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))['meta']['seed']
 
 
 def main():
