@@ -42,4 +42,5 @@ stages:
     params:
     - meta
     metrics:
-    - models/metrics.yaml
+    - models/metrics.yaml:
+        cache: false
