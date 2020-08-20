@@ -11,6 +11,7 @@ from sklearn.metrics import roc_auc_score
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
+PATH_MODELS = 'models'
 SEED = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))['meta']['seed']
 
 
@@ -31,13 +32,22 @@ def main():
     
     tss = TimeSeriesSplit(n_splits=10)
     
+    metrics = {}
+    
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
     logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=tss, scoring='roc_auc', n_jobs=1)
-    logit_train_stats = (logit_train_scores, np.mean(logit_train_scores), np.std(logit_train_scores))
-    print('Scores on train: {}\nMean: {}, std: {}'.format(*logit_train_stats))
+    metrics['train_scores'] = {}
+    for i, value in enumerate(logit_train_scores.tolist(), start=1):
+        metrics['train_scores'][f'fold{i}'] = float(value)
+    metrics['train_mean'] = float(np.mean(logit_train_scores))
+    metrics['train_std'] = float(np.std(logit_train_scores))
     logit.fit(X_train, y_train)
     logit_valid_score = roc_auc_score(y_valid, logit.predict_proba(X_valid)[:, 1])
-    print('Score on valid: {}'.format(logit_valid_score))
+    metrics['valid'] = float(logit_valid_score)
+    
+    with open(PROJECT_DIR.joinpath(PATH_MODELS, 'metrics.yaml'), 'w') as fout:
+        yaml.dump(metrics, fout)
+    
 
 if __name__ == '__main__':
     main()

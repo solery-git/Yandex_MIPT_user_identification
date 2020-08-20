@@ -1,0 +1,88 @@
+preprocess:
+  cmd: python src/data/preprocess_data.py
+  deps:
+  - path: data/raw/test_sessions.csv
+    md5: 46a039aa3a606d238c9cf4db8f014621
+  - path: data/raw/train_sessions.csv
+    md5: 7e8b612ba5eb9463972ed991e3e79068
+  - path: src/data/preprocess_data.py
+    md5: a7e2a58c0052236d5fd80b6f857d89af
+  outs:
+  - path: data/interim/sites_train_test.pkl
+    md5: b69964ab4dd501e4b7da718ab7423c34
+  - path: data/interim/timestamps_train_test.pkl
+    md5: 915585f79f225a232d82ad42112278eb
+  - path: data/interim/train_size.pkl
+    md5: 8cfbea7eda1df534c4a655392725ecf2
+  - path: data/processed/y.pkl
+    md5: d55d2a7bbd9b6610e8cf4e9668a49024
+build_features:
+  cmd: python src/features/build_features.py
+  deps:
+  - path: data/interim/sites_train_test.pkl
+    md5: b69964ab4dd501e4b7da718ab7423c34
+  - path: data/interim/timestamps_train_test.pkl
+    md5: 915585f79f225a232d82ad42112278eb
+  - path: src/features/build_features.py
+    md5: ea70bf74372af32f78ab3f030786a775
+  outs:
+  - path: data/interim/features_train_test.pkl
+    md5: a7344972713b2daf5635331528c062c1
+prepare_features:
+  cmd: python src/features/select_and_prepare_features.py
+  deps:
+  - path: data/interim/features_train_test.pkl
+    md5: a7344972713b2daf5635331528c062c1
+  - path: data/interim/sites_train_test.pkl
+    md5: b69964ab4dd501e4b7da718ab7423c34
+  - path: data/interim/train_size.pkl
+    md5: 8cfbea7eda1df534c4a655392725ecf2
+  - path: data/raw/site_dic.pkl
+    md5: cfcc0d66c975152f16eb4b83bb77269f
+  - path: src/features/select_and_prepare_features.py
+    md5: fa2ae09ad58b0a24a4b417fd91f55b80
+  params:
+    params.yaml:
+      featurize:
+        sites_vectorizer:
+          method: tfidf
+          params:
+            ngram_range:
+            - 1
+            - 5
+            max_features: 50000
+        feature_types:
+          prepared: []
+          categorical:
+          - time_of_day
+          to_log: []
+          to_scale_standard:
+          - session_timespan
+          to_scale_maxabs:
+          - day_of_week
+          - year_month
+      meta:
+        seed: 17
+  outs:
+  - path: data/processed/X_test.pkl
+    md5: 1b387c6652968688d5de04f305b901c3
+  - path: data/processed/X_train.pkl
+    md5: 34c16be9df7345d313cdf11139307dcf
+evaluate:
+  cmd: python src/models/evaluate_model.py
+  deps:
+  - path: data/processed/X_test.pkl
+    md5: 1b387c6652968688d5de04f305b901c3
+  - path: data/processed/X_train.pkl
+    md5: 34c16be9df7345d313cdf11139307dcf
+  - path: data/processed/y.pkl
+    md5: d55d2a7bbd9b6610e8cf4e9668a49024
+  - path: src/models/evaluate_model.py
+    md5: 6af16587c909ca1ff76b6ebee7602c73
+  params:
+    params.yaml:
+      meta:
+        seed: 17
+  outs:
+  - path: models/metrics.yaml
+    md5: 5716955cf6ad5a6d515f25aac042726b

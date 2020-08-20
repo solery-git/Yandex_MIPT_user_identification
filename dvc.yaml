@@ -1,0 +1,45 @@
+stages:
+  preprocess:
+    cmd: python src/data/preprocess_data.py
+    deps:
+    - data/raw/test_sessions.csv
+    - data/raw/train_sessions.csv
+    - src/data/preprocess_data.py
+    outs:
+    - data/interim/sites_train_test.pkl
+    - data/interim/timestamps_train_test.pkl
+    - data/interim/train_size.pkl
+    - data/processed/y.pkl
+  build_features:
+    cmd: python src/features/build_features.py
+    deps:
+    - data/interim/sites_train_test.pkl
+    - data/interim/timestamps_train_test.pkl
+    - src/features/build_features.py
+    outs:
+    - data/interim/features_train_test.pkl
+  prepare_features:
+    cmd: python src/features/select_and_prepare_features.py
+    deps:
+    - data/interim/features_train_test.pkl
+    - data/interim/sites_train_test.pkl
+    - data/interim/train_size.pkl
+    - data/raw/site_dic.pkl
+    - src/features/select_and_prepare_features.py
+    params:
+    - featurize
+    - meta
+    outs:
+    - data/processed/X_test.pkl
+    - data/processed/X_train.pkl
+  evaluate:
+    cmd: python src/models/evaluate_model.py
+    deps:
+    - data/processed/X_test.pkl
+    - data/processed/X_train.pkl
+    - data/processed/y.pkl
+    - src/models/evaluate_model.py
+    params:
+    - meta
+    metrics:
+    - models/metrics.yaml
