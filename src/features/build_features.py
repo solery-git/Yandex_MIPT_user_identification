@@ -60,6 +60,7 @@ def make_features(X_sites, X_times):
     X_features['#popular_sites'] = count_popular_sites(X_sites, popular_sites_indicators)
     #X_features['%popular_sites'] = X_features['#popular_sites'] / X_features['#unique_sites']
     X_features['year_month'] = X_times['time1'].dt.strftime('%y%m').astype(int)
+    X_features['month'] = X_times['time1'].dt.month
     X_features['session_timespan'] = X_times.apply(lambda row: get_session_timespan(row), axis=1, raw=True)
 
     return X_features
