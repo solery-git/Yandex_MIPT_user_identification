@@ -86,3 +86,19 @@ evaluate:
   outs:
   - path: models/metrics.yaml
     md5: 5716955cf6ad5a6d515f25aac042726b
+compare:
+  cmd: python src/models/compare_models.py
+  deps:
+  - path: models/metrics.yaml
+    md5: 5716955cf6ad5a6d515f25aac042726b
+  - path: src/models/compare_models.py
+    md5: 217290cdd35abcf1e5669cfc0b20dbf5
+  params:
+    params.yaml:
+      compare:
+        with: baseline
+  outs:
+  - path: models/metrics_diff.tsv
+    md5: d41d8cd98f00b204e9800998ecf8427e
+  - path: models/metrics_ttest.yaml
+    md5: d41d8cd98f00b204e9800998ecf8427e

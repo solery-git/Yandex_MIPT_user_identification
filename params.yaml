@@ -19,3 +19,5 @@ featurize:
             - 'day_of_week'
             - 'year_month'
 
+compare:
+    with: 'baseline'

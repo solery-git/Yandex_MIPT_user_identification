@@ -44,3 +44,13 @@ stages:
     metrics:
     - models/metrics.yaml:
         cache: false
+  compare:
+    cmd: python src/models/compare_models.py
+    deps:
+    - models/metrics.yaml
+    - src/models/compare_models.py
+    params:
+    - compare
+    metrics:
+    - models/metrics_diff.tsv
+    - models/metrics_ttest.yaml
