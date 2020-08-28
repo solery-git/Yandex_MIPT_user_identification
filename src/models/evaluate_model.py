@@ -36,8 +36,9 @@ def main():
     
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
     logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=tss, scoring='roc_auc', n_jobs=1)
+    logit_train_scores = logit_train_scores[1:] #remove fold1 bc it's not representative
     metrics['train_scores'] = {}
-    for i, value in enumerate(logit_train_scores.tolist(), start=1):
+    for i, value in enumerate(logit_train_scores.tolist(), start=2):
         metrics['train_scores'][f'fold{i}'] = float(value)
     metrics['train_mean'] = float(np.mean(logit_train_scores))
     metrics['train_std'] = float(np.std(logit_train_scores))

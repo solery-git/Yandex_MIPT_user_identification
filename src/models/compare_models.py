@@ -24,7 +24,7 @@ with open(metrics_diff_path, 'w') as fout:
 try:
     diff_df = pd.read_csv(metrics_diff_path, usecols=['Metric', 'Change'], delim_whitespace=True)
     diff_df.set_index('Metric', inplace=True)
-    diff_df = diff_df.loc[[f'train_scores.fold{i}' for i in range(1, 10+1)]]
+    diff_df = diff_df.loc[[f'train_scores.fold{i}' for i in range(2, 10+1)]] #remove fold1 bc it's not representative
     scores_diff = diff_df['Change'].astype(float).values
     tstat, pvalue = map(float, list(ttest_1samp(scores_diff, 0)))
     result = {'t-stat': tstat, 'p-value': pvalue}
