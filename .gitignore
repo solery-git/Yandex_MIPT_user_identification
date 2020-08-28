@@ -94,3 +94,7 @@ target/
 
 # References
 /references/
+
+# DVC files
+/dvc.lock
+/dvc.yaml
