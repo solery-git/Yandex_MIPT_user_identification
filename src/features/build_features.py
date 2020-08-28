@@ -30,6 +30,14 @@ def make_features(X_sites, X_times):
         row_ne = row[~np.isnat(row)]
         return int((row_ne[-1]-row_ne[0]) / np.timedelta64(1, 's'))
     
+    def get_times_std(row):
+        row_ne = row[~np.isnan(row)]
+        return np.std(row_ne) if len(row_ne) > 0 else 0
+    
+    def percent_long_visits(row, threshold=2):
+        row_ne = row[~np.isnan(row)]
+        return np.count_nonzero(row_ne >= threshold) / len(row_ne) if len(row_ne) > 0 else 0
+    
     def between(left, x, right):
         return left <= x and x <= right
     
@@ -52,6 +60,8 @@ def make_features(X_sites, X_times):
     popular_sites = [site for site, count in sites_counter.most_common(30)]
     popular_sites_indicators = np.isin(X_sites.values, popular_sites)
     
+    X_time_diffs = np.diff(X_times.values, 1, axis=1) / np.timedelta64(1, 's')
+    
     X_features['start_hour'] = X_times['time1'].dt.hour
     X_features['time_of_day'] = X_features['start_hour'].apply(get_time_of_day)
     X_features['day_of_week'] = X_times['time1'].dt.dayofweek
@@ -62,6 +72,8 @@ def make_features(X_sites, X_times):
     X_features['year_month'] = X_times['time1'].dt.strftime('%y%m').astype(int)
     X_features['month'] = X_times['time1'].dt.month
     X_features['session_timespan'] = X_times.apply(lambda row: get_session_timespan(row), axis=1, raw=True)
+    X_features['times_std'] = np.apply_along_axis(get_times_std, 1, X_time_diffs)
+    X_features['%long_visits'] = np.apply_along_axis(percent_long_visits, 1, X_time_diffs)
 
     return X_features
 
