@@ -8,12 +8,31 @@ import pandas as pd
 from scipy.sparse import csr_matrix, hstack as sparse_hstack
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, MaxAbsScaler
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from gensim.utils import simple_preprocess
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_RAW = 'data/raw'
 PATH_INTERIM = 'data/interim'
 PATH_PROCESSED = 'data/processed'
 PARAMS = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))['featurize']
+
+
+class Doc2VecVectorizer():
+    def __init__(self, *args, **kwargs):
+        self.model = Doc2Vec(*args, **kwargs)
+    
+    def fit(self, X_text):
+        X_tagged = [TaggedDocument(simple_preprocess(line), [i]) for i, line in enumerate(X_text)]
+        self.model.build_vocab(X_tagged)
+        self.model.train(X_tagged, total_examples=self.model.corpus_count, epochs=self.model.epochs)
+    
+    def transform(self, X_text):
+        return np.array([self.model.infer_vector(simple_preprocess(line)) for line in X_text])
+    
+    def fit_transform(self, X_text):
+        self.fit(X_text)
+        return self.transform(X_text)
 
 
 def csr_hstack(arglist):
@@ -30,6 +49,8 @@ def sparsify_data(X, vectorizer_params, site_dic, train_part=None, method='count
         vectorizer = CountVectorizer(**vectorizer_params)
     elif method == 'tfidf':
         vectorizer = TfidfVectorizer(**vectorizer_params)
+    elif method == 'doc2vec':
+        vectorizer = Doc2VecVectorizer(vector_size=50, min_count=2, epochs=30, workers=8)
     else:
         raise ValueError(method)
     
