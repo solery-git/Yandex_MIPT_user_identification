@@ -18,5 +18,10 @@ featurize:
             - 'day_of_week'
             - 'year_month'
 
+evaluate:
+    submission:
+        make: True
+        name: 'yorko_and_doc2vec'
+
 compare:
     with: 'baseline'
