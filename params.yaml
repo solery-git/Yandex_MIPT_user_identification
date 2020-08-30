@@ -2,11 +2,10 @@ meta:
     seed: 17
 
 featurize:
-    sites_vectorizer:
-        method: 'tfidf'
-        params:
-            ngram_range: [1, 5]
-            max_features: 50000
+    vectorize_sites:
+        - method: 'tfidf'
+          ngram_range: [1, 5]
+          max_features: 50000
     
     feature_types:
         prepared: []

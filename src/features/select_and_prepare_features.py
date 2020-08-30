@@ -3,6 +3,7 @@ import pickle
 import yaml
 from pathlib import Path
 from collections import Counter
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix, hstack as sparse_hstack
@@ -38,19 +39,26 @@ class Doc2VecVectorizer():
 def csr_hstack(arglist):
     return csr_matrix(sparse_hstack(arglist))
 
-def sparsify_data(X, vectorizer_params, site_dic, train_part=None, method='count'):
+def sparsify_data(X, vectorizer_params, site_dic, train_part=None):
     id2site = {v:k for (k, v) in site_dic.items()}
     id2site[0] = 'unknown'
     
     X_text = [' '.join(map(id2site.get, row)) if len(row) > 0 else '' for row in X]
     #X_text = [' '.join(map(str, row)) for row in X]
+    
+    default_sklearn_vparams = {'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
+    
+    vparams = deepcopy(vectorizer_params)
+    method = vparams.pop('method')
 
     if method == 'count':
-        vectorizer = CountVectorizer(**vectorizer_params)
+        vparams = {**default_sklearn_vparams, **vparams}
+        vectorizer = CountVectorizer(**vparams)
     elif method == 'tfidf':
-        vectorizer = TfidfVectorizer(**vectorizer_params)
+        vparams = {**default_sklearn_vparams, **vparams}
+        vectorizer = TfidfVectorizer(**vparams)
     elif method == 'doc2vec':
-        vectorizer = Doc2VecVectorizer(vector_size=50, min_count=2, epochs=30, workers=8)
+        vectorizer = Doc2VecVectorizer(**vparams)
     else:
         raise ValueError(method)
     
@@ -103,14 +111,13 @@ def main():
         site_dic = pickle.load(fin)
     
     
-    feature_types = PARAMS['feature_types']
-    vec_method = PARAMS['sites_vectorizer']['method']
-    vec_params = {**PARAMS['sites_vectorizer']['params'], 'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
-    X_train_test_sparse = csr_hstack([sparsify_data(sites_train_test.values, vec_params, site_dic, train_size, method=vec_method), 
-                                      #encode_sites_with_time_diffs(sites_train_test, timestamps_train_test), 
-                                      #make_site_names(sites_train_test, site_dic, method='tfidf'), 
-                                      prepare_features(features_train_test, feature_types)
-                                     ])
+    all_features = []
+    for vec_params in PARAMS['vectorize_sites']:
+        all_features.append( sparsify_data(sites_train_test.values, vec_params, site_dic, train_size) )
+    
+    all_features.append( prepare_features(features_train_test, PARAMS['feature_types']) )
+    
+    X_train_test_sparse = csr_hstack(all_features)
     
     X_train_sparse = X_train_test_sparse[:train_size]
     X_test_sparse = X_train_test_sparse[train_size:]
