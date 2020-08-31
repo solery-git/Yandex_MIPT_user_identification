@@ -21,7 +21,7 @@ featurize:
 evaluate:
     submission:
         make: True
-        name: 'yorko_and_doc2vec'
+        name: 'yorko'
 
 compare:
     with: 'baseline'

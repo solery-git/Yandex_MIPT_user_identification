@@ -22,7 +22,7 @@ with open(metrics_diff_path, 'w') as fout:
     fout.write(subprocess.run(cmd_tokens, capture_output=True, text=True).stdout)
 
 try:
-    diff_df = pd.read_csv(metrics_diff_path, usecols=['Metric', 'Change'], delim_whitespace=True)
+    diff_df = pd.read_fwf(metrics_diff_path, usecols=['Metric', 'Change'])
     diff_df.set_index('Metric', inplace=True)
     diff_df = diff_df.loc[[f'train_scores.fold{i}' for i in range(2, 10+1)]] #remove fold1 bc it's not representative
     scores_diff = diff_df['Change'].astype(float).values
