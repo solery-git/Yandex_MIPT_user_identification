@@ -63,7 +63,7 @@ def main():
         write_to_submission_file(logit_test_proba, PROJECT_DIR.joinpath(PATH_SUBMISSIONS, out_file))
     
     with open(PROJECT_DIR.joinpath(PATH_MODELS, 'metrics.yaml'), 'w') as fout:
-        yaml.dump(metrics, fout)
+        yaml.dump(metrics, fout, sort_keys=False)
     
 
 if __name__ == '__main__':
