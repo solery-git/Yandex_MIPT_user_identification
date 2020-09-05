@@ -46,7 +46,7 @@ def main():
     metrics = {}
     
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
-    logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=skf, scoring='roc_auc', n_jobs=1)
+    logit_train_scores = cross_val_score(logit, X_train, y_train, cv=skf, scoring='roc_auc', n_jobs=1)
     metrics['train_scores'] = {}
     for i, value in enumerate(logit_train_scores.tolist(), start=1):
         metrics['train_scores'][f'fold{i}'] = float(value)
@@ -57,6 +57,7 @@ def main():
     metrics['valid'] = float(logit_valid_score)
     
     if PARAMS['submission']['make']:
+        logit.fit(X_train_sparse, y)
         logit_test_proba = logit.predict_proba(X_test_sparse)[:, 1]
         out_file = PARAMS['submission']['name'] + '.csv'
         write_to_submission_file(logit_test_proba, PROJECT_DIR.joinpath(PATH_SUBMISSIONS, out_file))
