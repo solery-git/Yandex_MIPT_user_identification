@@ -5,8 +5,8 @@ from pathlib import Path
 from collections import Counter
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import SGDClassifier, LogisticRegression, LogisticRegressionCV
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, TimeSeriesSplit, learning_curve, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.metrics import roc_auc_score
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
@@ -37,9 +37,7 @@ def main():
         y = pickle.load(fin)
     
     
-    train_share = int(.7 * X_train_sparse.shape[0])
-    X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
-    X_valid, y_valid  = X_train_sparse[train_share:, :], y[train_share:]
+    X_train, X_holdout, y_train, y_holdout = train_test_split(X_train_sparse, y, test_size=0.3, shuffle=True, random_state=SEED, stratify=y)
     
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=SEED)
     
@@ -53,14 +51,15 @@ def main():
     metrics['train_mean'] = float(np.mean(logit_train_scores))
     metrics['train_std'] = float(np.std(logit_train_scores))
     logit.fit(X_train, y_train)
-    logit_valid_score = roc_auc_score(y_valid, logit.predict_proba(X_valid)[:, 1])
-    metrics['valid'] = float(logit_valid_score)
+    logit_holdout_score = roc_auc_score(y_holdout, logit.predict_proba(X_holdout)[:, 1])
+    metrics['holdout'] = float(logit_holdout_score)
     
     if PARAMS['submission']['make']:
         logit.fit(X_train_sparse, y)
         logit_test_proba = logit.predict_proba(X_test_sparse)[:, 1]
         out_file = PARAMS['submission']['name'] + '.csv'
         write_to_submission_file(logit_test_proba, PROJECT_DIR.joinpath(PATH_SUBMISSIONS, out_file))
+    
     
     with open(PROJECT_DIR.joinpath(PATH_MODELS, 'metrics.yaml'), 'w') as fout:
         yaml.dump(metrics, fout, sort_keys=False)
