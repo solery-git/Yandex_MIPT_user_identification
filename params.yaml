@@ -20,8 +20,8 @@ featurize:
 
 evaluate:
     submission:
-        make: False
-        name: 'yorko'
+        make: True
+        name: 'yorko_fixed'
 
 compare:
     with: 'baseline'

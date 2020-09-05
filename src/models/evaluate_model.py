@@ -41,12 +41,12 @@ def main():
     X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
     X_valid, y_valid  = X_train_sparse[train_share:, :], y[train_share:]
     
-    tss = TimeSeriesSplit(n_splits=10)
+    skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=SEED)
     
     metrics = {}
     
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
-    logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=tss, scoring='roc_auc', n_jobs=1)
+    logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=skf, scoring='roc_auc', n_jobs=1)
     metrics['train_scores'] = {}
     for i, value in enumerate(logit_train_scores.tolist(), start=1):
         metrics['train_scores'][f'fold{i}'] = float(value)
