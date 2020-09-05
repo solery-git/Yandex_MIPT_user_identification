@@ -26,7 +26,8 @@ def main():
     try:
         diff_df = pd.read_fwf(metrics_diff_path, usecols=['Metric', 'Change'])
         diff_df.set_index('Metric', inplace=True)
-        scores_diff = diff_df['Change'].astype(float).values
+        fold_score_names = [f'train_scores.fold{i}' for i in range(1, 10+1)]
+        scores_diff = diff_df.loc[fold_score_names, 'Change'].astype(float).values
         tstat, pvalue = map(float, list(ttest_1samp(scores_diff, 0)))
         result = {'t-stat': tstat, 'p-value': pvalue}
         if mode_cmd:
