@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 from sklearn.metrics import roc_auc_score
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
@@ -37,14 +37,16 @@ def main():
         y = pickle.load(fin)
     
     
-    X_train, X_holdout, y_train, y_holdout = train_test_split(X_train_sparse, y, test_size=0.3, shuffle=True, random_state=SEED, stratify=y)
+    train_share = int(.7 * X_train_sparse.shape[0])
+    X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
+    X_holdout, y_holdout  = X_train_sparse[train_share:, :], y[train_share:]
     
-    skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=SEED)
+    tss = TimeSeriesSplit(n_splits=10)
     
     metrics = {}
     
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
-    logit_train_scores = cross_val_score(logit, X_train, y_train, cv=skf, scoring='roc_auc', n_jobs=1)
+    logit_train_scores = cross_val_score(logit, X_train, y_train, cv=tss, scoring='roc_auc', n_jobs=1)
     metrics['train_scores'] = {}
     for i, value in enumerate(logit_train_scores.tolist(), start=1):
         metrics['train_scores'][f'fold{i}'] = float(value)
