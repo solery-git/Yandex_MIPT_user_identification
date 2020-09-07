@@ -24,4 +24,4 @@ evaluate:
         name: 'yorko_fixed'
 
 compare:
-    with: 'baseline'
+    with: 'baseline2'
