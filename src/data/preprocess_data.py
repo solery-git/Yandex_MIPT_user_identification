@@ -21,15 +21,24 @@ def fix_incorrect_date_formats(df, columns_to_fix):
 
 
 def main():
-    train_df = pd.read_csv(PROJECT_DIR.joinpath(PATH_RAW, 'train_sessions.csv'), index_col='session_id')
-    test_df = pd.read_csv(PROJECT_DIR.joinpath(PATH_RAW, 'test_sessions.csv'), index_col='session_id')
+    site_columns = ['site%d' % i for i in range(1, 10+1)]
+    time_columns = ['time%d' % i for i in range(1, 10+1)]
     
+    train_df = pd.read_csv(PROJECT_DIR.joinpath(PATH_RAW, 'train_sessions.csv'), index_col='session_id', parse_dates=time_columns)
+    test_df = pd.read_csv(PROJECT_DIR.joinpath(PATH_RAW, 'test_sessions.csv'), index_col='session_id', parse_dates=time_columns)
+    
+    
+    train_df = fix_incorrect_date_formats(train_df, time_columns)
+    test_df = fix_incorrect_date_formats(test_df, time_columns)
+    
+    train_df[site_columns] = train_df[site_columns].fillna(0).astype(int)
+    test_df[site_columns] = test_df[site_columns].fillna(0).astype(int)
     
     train_df = train_df.sort_values(by='time1')
+    
     train_test_df = pd.concat([train_df, test_df], sort=False)
-    sites_train_test = train_test_df[['site%d' % i for i in range(1, 11)]].fillna(0).astype('int')
-    timestamps_train_test = train_test_df[['time%d' % i for i in range(1, 11)]].fillna(np.datetime64('NaT')).astype(np.datetime64)
-    timestamps_train_test = fix_incorrect_date_formats(timestamps_train_test, timestamps_train_test.columns)
+    sites_train_test = train_test_df[site_columns]
+    timestamps_train_test = train_test_df[time_columns]
     y = train_df['target'].astype('int').values
     
     
