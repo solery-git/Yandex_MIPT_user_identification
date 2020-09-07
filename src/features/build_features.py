@@ -51,6 +51,9 @@ def make_features(X_sites, X_times):
         elif between(19, hour, 23):
             return 3
     
+    def encode_year_month(datetime):
+        return (datetime.year * 12 + datetime.month) - (2013 * 12 + 11)
+    
     
     X_features = pd.DataFrame(index=X_sites.index)
     
@@ -69,7 +72,7 @@ def make_features(X_sites, X_times):
     #X_features['#unique_sites'] = X_sites.apply(count_unique_sites, raw=True, axis=1)
     X_features['#popular_sites'] = count_popular_sites(X_sites, popular_sites_indicators)
     #X_features['%popular_sites'] = X_features['#popular_sites'] / X_features['#unique_sites']
-    X_features['year_month'] = X_times['time1'].dt.strftime('%y%m').astype(int)
+    X_features['year_month'] = X_times['time1'].apply(encode_year_month)
     X_features['month'] = X_times['time1'].dt.month
     X_features['session_timespan'] = X_times.apply(lambda row: get_session_timespan(row), axis=1, raw=True)
     X_features['times_std'] = np.apply_along_axis(get_times_std, 1, X_time_diffs)
