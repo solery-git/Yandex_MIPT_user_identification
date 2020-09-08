@@ -34,6 +34,9 @@ class Doc2VecVectorizer():
     def fit_transform(self, X_text):
         self.fit(X_text)
         return self.transform(X_text)
+    
+    def get_feature_names(self, prefix='doc2vec'):
+        return [f'{prefix}_{i}' for i in range(1, self.model.vector_size+1)]
 
 
 def csr_hstack(arglist):
@@ -67,7 +70,7 @@ def sparsify_data(X, vectorizer_params, site_dic, train_part=None):
     else:
         vectorizer.fit(X_text[:train_part])
     
-    return vectorizer.transform(X_text)
+    return vectorizer.transform(X_text), vectorizer.get_feature_names()
 
 def prepare_features(X_features, feature_types):
     def extract_features(feat_type):
@@ -83,18 +86,31 @@ def prepare_features(X_features, feature_types):
         else:
             return feat_array
     
+    feature_names = []
+    
     prepared_features = extract_features('prepared')
-    encoded_features = transform_features(OneHotEncoder(sparse=True, dtype=np.int16), extract_features('categorical'))
+    feature_names += feature_types['prepared']
+    
+    oh_encoder = OneHotEncoder(sparse=True, dtype=np.int16)
+    encoded_features = transform_features(oh_encoder, extract_features('categorical'))
+    feature_names += oh_encoder.get_feature_names(feature_types['categorical']).tolist()
+    
     log_features = np.log(extract_features('to_log') + 1)
     #also standard scale log features
     scaled_standard_features = transform_features(StandardScaler(), np.hstack([extract_features('to_scale_standard'), 
                                                                                log_features]))
-    scaled_maxabs_features = transform_features(MaxAbsScaler(), extract_features('to_scale_maxabs'))
+    feature_names += feature_types['to_scale_standard']
+    feature_names += feature_types['to_log']
     
-    return csr_hstack([prepared_features, 
-                       encoded_features, 
-                       scaled_standard_features, 
-                       scaled_maxabs_features])
+    scaled_maxabs_features = transform_features(MaxAbsScaler(), extract_features('to_scale_maxabs'))
+    feature_names += feature_types['to_scale_maxabs']
+    
+    features = csr_hstack([prepared_features, 
+                           encoded_features, 
+                           scaled_standard_features, 
+                           scaled_maxabs_features])
+    
+    return features, feature_names
 
 
 def main():
@@ -112,10 +128,16 @@ def main():
     
     
     all_features = []
-    for vec_params in PARAMS['vectorize_sites']:
-        all_features.append( sparsify_data(sites_train_test.values, vec_params, site_dic, train_size) )
+    all_feature_names = []
     
-    all_features.append( prepare_features(features_train_test, PARAMS['feature_types']) )
+    for vec_params in PARAMS['vectorize_sites']:
+        features, feature_names = sparsify_data(sites_train_test.values, vec_params, site_dic, train_size)
+        all_features.append(features)
+        all_feature_names += feature_names
+    
+    features, feature_names = prepare_features(features_train_test, PARAMS['feature_types'])
+    all_features.append(features)
+    all_feature_names += feature_names
     
     X_train_test_sparse = csr_hstack(all_features)
     
