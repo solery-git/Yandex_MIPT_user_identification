@@ -41,6 +41,7 @@ def show_feature_weights(estimator, data_feature_names, fe_feature_names):
     fe_explanation = eli5.explain_weights(estimator, feature_names=feature_names, feature_filter=lambda name: name in fe_feature_names_set)
     print(eli5.format_as_text(fe_explanation, show=['targets']))
 
+
 def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as fin:
         X_train_sparse = pickle.load(fin)

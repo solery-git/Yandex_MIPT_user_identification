@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import subprocess
 import yaml
@@ -13,7 +14,7 @@ PARAMS = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))
 def main():
     metrics_diff_path = PROJECT_DIR.joinpath(PATH_MODELS, 'metrics_diff.tsv')
     
-    cmd_tokens = ['dvc', 'metrics', 'diff']
+    cmd_tokens = ['dvc', 'metrics', 'diff', '--all']
     cmd_input = sys.argv[1:]
     mode_cmd = (len(cmd_input) > 0)
     if mode_cmd: #ignore params file in cmd mode
