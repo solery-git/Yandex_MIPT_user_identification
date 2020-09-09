@@ -58,15 +58,18 @@ def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'fe_feature_names.pkl'), 'rb') as fin:
         fe_feature_names = pickle.load(fin)
     
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'adv_valid_mask.pkl'), 'rb') as fin:
+        adv_valid_mask = pickle.load(fin)
+    
     
     train_share = int(.7 * X_train_sparse.shape[0])
     X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
     X_holdout, y_holdout  = X_train_sparse[train_share:, :], y[train_share:]
     
     tss = TimeSeriesSplit(n_splits=10)
-    
     metrics = {}
     
+    # Cross-validation on chosen CV scheme
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
     logit_train_scores = cross_val_score(logit, X_train, y_train, cv=tss, scoring='roc_auc', n_jobs=1)
     metrics['train_scores'] = {}
@@ -74,11 +77,28 @@ def main():
         metrics['train_scores'][f'fold{i}'] = float(value)
     metrics['train_mean'] = float(np.mean(logit_train_scores))
     metrics['train_std'] = float(np.std(logit_train_scores))
+    
+    # Re-training on the whole train set and evaluation on holdout set
     logit.fit(X_train, y_train)
     logit_holdout_score = roc_auc_score(y_holdout, logit.predict_proba(X_holdout)[:, 1])
     metrics['holdout'] = float(logit_holdout_score)
-    show_feature_weights(logit, data_feature_names, fe_feature_names)
+    if PARAMS['show_weights']:
+        print('Feature weights of model on regular train part:')
+        show_feature_weights(logit, data_feature_names, fe_feature_names)
     
+    # Making train and validation sets using examples mask from adversarial validation
+    X_adv_train = X_train_sparse[~adv_valid_mask]
+    X_adv_valid = X_train_sparse[adv_valid_mask]
+    y_adv_train = y[~adv_valid_mask]
+    y_adv_valid = y[adv_valid_mask]
+    
+    # Re-training and evaluaiton on constructed sets
+    logit.fit(X_adv_train, y_adv_train)
+    logit_adv_score = roc_auc_score(y_adv_valid, logit.predict_proba(X_adv_valid)[:, 1])
+    metrics['adv_valid'] = float(logit_adv_score)
+    if PARAMS['show_weights']:
+        print('Feature weights of model on adversarial train part:')
+        show_feature_weights(logit, data_feature_names, fe_feature_names)
     
     if PARAMS['submission']['make']:
         logit.fit(X_train_sparse, y)

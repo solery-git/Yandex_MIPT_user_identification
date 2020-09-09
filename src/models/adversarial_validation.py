@@ -15,10 +15,9 @@ import eli5
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
 PATH_MODELS = 'models'
-PATH_SUBMISSIONS = 'kaggle_submissions'
 PARAMS_ALL = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))
 SEED = PARAMS_ALL['meta']['seed']
-PARAMS = PARAMS_ALL['evaluate']
+PARAMS = PARAMS_ALL['adversarial_validation']
 
 
 def csr_hstack(arglist):
@@ -66,13 +65,22 @@ def main():
     predictions_proba = logit.predict_proba(X)[:, 1]
     logit_score = roc_auc_score(y, predictions_proba)
     print('Score:', logit_score)
-    print('Number of train examples:', X[y == 0].shape[0])
-    validation_examples = X[(y == 0) & (predictions_proba > 0.5)]
+    print('Number of train examples:', X_train_sparse.shape[0])
+    
+    adv_valid_mask = (predictions_proba > 0.5)[:train_len]
+    validation_examples = X_train_sparse[adv_valid_mask]
     print('Number of train examples that look like test:', validation_examples.shape[0])
-    validation_targets = target[predictions_proba[y == 0] > 0.5]
+    
+    validation_targets = target[predictions_proba[:train_len] > 0.5]
     class_0, class_1 = list(np.bincount(validation_targets))
     print(f'Class 0: {class_0}, class 1: {class_1}')
-    show_feature_weights(logit, data_feature_names, fe_feature_names)
+    
+    if PARAMS['show_weights']:
+        show_feature_weights(logit, data_feature_names, fe_feature_names)
+    
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'adv_valid_mask.pkl'), 'wb') as fout:
+        pickle.dump(adv_valid_mask, fout, protocol=2)
     
 
 if __name__ == '__main__':

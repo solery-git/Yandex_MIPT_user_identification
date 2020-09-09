@@ -18,10 +18,14 @@ featurize:
             - 'day_of_week'
             - 'year_month'
 
+adversarial_validation:
+    show_weights: False
+
 evaluate:
+    show_weights: False
     submission:
-        make: False
+        make: True
         name: 'yorko_fixed'
 
 compare:
-    with: 'baseline2'
+    with: 'baseline'
