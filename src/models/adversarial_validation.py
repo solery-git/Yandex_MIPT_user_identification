@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import warnings
+warnings.filterwarnings('ignore')
 import pickle
 import yaml
 from pathlib import Path
@@ -7,6 +9,8 @@ import pandas as pd
 from scipy.sparse import csr_matrix, hstack as sparse_hstack, vstack as sparse_vstack
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
+import eli5
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
@@ -23,6 +27,17 @@ def csr_hstack(arglist):
 def csr_vstack(arglist):
     return csr_matrix(sparse_vstack(arglist))
 
+def show_feature_weights(estimator, data_feature_names, fe_feature_names):
+    feature_names = data_feature_names + fe_feature_names
+    # top 30 data features
+    data_feature_names_set = set(data_feature_names)
+    data_explanation = eli5.explain_weights(estimator, feature_names=feature_names, top=30, feature_filter=lambda name: name in data_feature_names_set)
+    print(eli5.format_as_text(data_explanation, highlight_spaces=True))
+    # features from feature engineering
+    fe_feature_names_set = set(fe_feature_names)
+    fe_explanation = eli5.explain_weights(estimator, feature_names=feature_names, feature_filter=lambda name: name in fe_feature_names_set)
+    print(eli5.format_as_text(fe_explanation, show=['targets']))
+
 
 def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as fin:
@@ -33,6 +48,12 @@ def main():
     
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'rb') as fin:
         target = pickle.load(fin)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'data_feature_names.pkl'), 'rb') as fin:
+        data_feature_names = pickle.load(fin)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'fe_feature_names.pkl'), 'rb') as fin:
+        fe_feature_names = pickle.load(fin)
     
     
     train_len = X_train_sparse.shape[0]
@@ -51,8 +72,7 @@ def main():
     validation_targets = target[predictions_proba[y == 0] > 0.5]
     class_0, class_1 = list(np.bincount(validation_targets))
     print(f'Class 0: {class_0}, class 1: {class_1}')
-    print('Feature importances:', logit.coef_[0][-7:].tolist())
-    print('Max feature importance:', np.max(np.abs(logit.coef_[0])))
+    show_feature_weights(logit, data_feature_names, fe_feature_names)
     
 
 if __name__ == '__main__':

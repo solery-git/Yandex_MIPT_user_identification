@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import warnings
+warnings.filterwarnings('ignore')
 import pickle
 import yaml
 from pathlib import Path
@@ -128,16 +130,16 @@ def main():
     
     
     all_features = []
-    all_feature_names = []
+    data_feature_names = []
+    fe_feature_names = []
     
     for vec_params in PARAMS['vectorize_sites']:
         features, feature_names = sparsify_data(sites_train_test.values, vec_params, site_dic, train_size)
         all_features.append(features)
-        all_feature_names += feature_names
+        data_feature_names += feature_names
     
-    features, feature_names = prepare_features(features_train_test, PARAMS['feature_types'])
+    features, fe_feature_names = prepare_features(features_train_test, PARAMS['feature_types'])
     all_features.append(features)
-    all_feature_names += feature_names
     
     X_train_test_sparse = csr_hstack(all_features)
     
@@ -150,6 +152,12 @@ def main():
     
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_test.pkl'), 'wb') as fout:
         pickle.dump(X_test_sparse, fout, protocol=2)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'data_feature_names.pkl'), 'wb') as fout:
+        pickle.dump(data_feature_names, fout, protocol=2)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'fe_feature_names.pkl'), 'wb') as fout:
+        pickle.dump(fe_feature_names, fout, protocol=2)
 
 if __name__ == '__main__':
     main()

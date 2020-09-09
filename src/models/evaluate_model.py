@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import warnings
+warnings.filterwarnings('ignore')
 import pickle
 import yaml
 from pathlib import Path
@@ -8,6 +10,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 from sklearn.metrics import roc_auc_score
+import eli5
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 PATH_PROCESSED = 'data/processed'
@@ -26,6 +30,17 @@ def write_to_submission_file(predicted_labels, out_file,
                                 columns=[target])
     predicted_df.to_csv(out_file, index_label=index_label)
 
+def show_feature_weights(estimator, data_feature_names, fe_feature_names):
+    feature_names = data_feature_names + fe_feature_names
+    # top 30 data features
+    data_feature_names_set = set(data_feature_names)
+    data_explanation = eli5.explain_weights(estimator, feature_names=feature_names, top=30, feature_filter=lambda name: name in data_feature_names_set)
+    print(eli5.format_as_text(data_explanation, highlight_spaces=True))
+    # features from feature engineering
+    fe_feature_names_set = set(fe_feature_names)
+    fe_explanation = eli5.explain_weights(estimator, feature_names=feature_names, feature_filter=lambda name: name in fe_feature_names_set)
+    print(eli5.format_as_text(fe_explanation, show=['targets']))
+
 def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as fin:
         X_train_sparse = pickle.load(fin)
@@ -35,6 +50,12 @@ def main():
     
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'y.pkl'), 'rb') as fin:
         y = pickle.load(fin)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'data_feature_names.pkl'), 'rb') as fin:
+        data_feature_names = pickle.load(fin)
+    
+    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'fe_feature_names.pkl'), 'rb') as fin:
+        fe_feature_names = pickle.load(fin)
     
     
     train_share = int(.7 * X_train_sparse.shape[0])
@@ -55,6 +76,8 @@ def main():
     logit.fit(X_train, y_train)
     logit_holdout_score = roc_auc_score(y_holdout, logit.predict_proba(X_holdout)[:, 1])
     metrics['holdout'] = float(logit_holdout_score)
+    show_feature_weights(logit, data_feature_names, fe_feature_names)
+    
     
     if PARAMS['submission']['make']:
         logit.fit(X_train_sparse, y)
