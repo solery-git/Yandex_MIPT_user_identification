@@ -25,6 +25,12 @@ def csr_hstack(arglist):
 def csr_vstack(arglist):
     return csr_matrix(sparse_vstack(arglist))
 
+def get_mask_top_n(arr, n):
+    indices = np.argpartition(arr, -n)[-n:]
+    result = np.zeros(len(arr), dtype=np.bool)
+    result[indices] = True
+    return result
+
 def show_feature_weights(estimator, data_feature_names, fe_feature_names):
     feature_names = data_feature_names + fe_feature_names
     # top 30 data features
@@ -35,7 +41,7 @@ def show_feature_weights(estimator, data_feature_names, fe_feature_names):
     fe_feature_names_set = set(fe_feature_names)
     fe_explanation = eli5.explain_weights(estimator, feature_names=feature_names, feature_filter=lambda name: name in fe_feature_names_set)
     print(eli5.format_as_text(fe_explanation, show=['targets']))
-
+    
 
 def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'X_train.pkl'), 'rb') as fin:
@@ -66,11 +72,11 @@ def main():
     print('Score:', logit_score)
     print('Number of train examples:', X_train_sparse.shape[0])
     
-    adv_valid_mask = (predictions_proba > 0.5)[:train_len]
+    adv_valid_mask = get_mask_top_n(predictions_proba[:train_len], 50000)
     validation_examples = X_train_sparse[adv_valid_mask]
-    print('Number of train examples that look like test:', validation_examples.shape[0])
+    print('Number of adversarial validation examples:', validation_examples.shape[0])
     
-    validation_targets = target[predictions_proba[:train_len] > 0.5]
+    validation_targets = target[adv_valid_mask]
     class_0, class_1 = list(np.bincount(validation_targets))
     print(f'Class 0: {class_0}, class 1: {class_1}')
     
