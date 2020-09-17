@@ -17,7 +17,6 @@ PATH_PROCESSED = 'data/processed'
 PATH_MODELS = 'models'
 PARAMS_ALL = yaml.safe_load(open(PROJECT_DIR.joinpath('params.yaml')))
 SEED = PARAMS_ALL['meta']['seed']
-PARAMS = PARAMS_ALL['adversarial_validation']
 
 
 def csr_hstack(arglist):
@@ -75,8 +74,7 @@ def main():
     class_0, class_1 = list(np.bincount(validation_targets))
     print(f'Class 0: {class_0}, class 1: {class_1}')
     
-    if PARAMS['show_weights']:
-        show_feature_weights(logit, data_feature_names, fe_feature_names)
+    show_feature_weights(logit, data_feature_names, fe_feature_names)
     
     
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'adv_valid_mask.pkl'), 'wb') as fout:
