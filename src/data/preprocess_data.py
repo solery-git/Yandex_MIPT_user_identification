@@ -28,8 +28,8 @@ def main():
     test_df = pd.read_csv(PROJECT_DIR.joinpath(PATH_RAW, 'test_sessions.csv'), index_col='session_id', parse_dates=time_columns)
     
     
-    train_df = fix_incorrect_date_formats(train_df, time_columns)
-    test_df = fix_incorrect_date_formats(test_df, time_columns)
+    #train_df = fix_incorrect_date_formats(train_df, time_columns)
+    #test_df = fix_incorrect_date_formats(test_df, time_columns)
     
     train_df[site_columns] = train_df[site_columns].fillna(0).astype(int)
     test_df[site_columns] = test_df[site_columns].fillna(0).astype(int)
