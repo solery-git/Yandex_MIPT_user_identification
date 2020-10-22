@@ -14,13 +14,15 @@ featurize:
         to_log: []
         to_scale_standard: 
             - 'session_timespan'
-        to_scale_maxabs: []
+        to_scale_maxabs: 
+            - 'day_of_week'
+            - 'year_month'
 
 evaluate:
     show_weights: False
     submission:
         make: False
-        name: 'yorko_fix_2feat'
+        name: 'yorko_fix_4feat'
 
 compare:
-    with: 'baseline'
+    with: 'baseline_2feat'
