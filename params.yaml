@@ -17,12 +17,13 @@ featurize:
         to_scale_maxabs: 
             - 'day_of_week'
             - 'year_month'
+            - 'month'
 
 evaluate:
     show_weights: False
     submission:
         make: False
-        name: 'yorko_fix_4feat'
+        name: 'yorko_fix_5feat'
 
 compare:
-    with: 'baseline_2feat'
+    with: 'f1e66a6'
