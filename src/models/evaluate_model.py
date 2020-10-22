@@ -58,9 +58,6 @@ def main():
     with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'fe_feature_names.pkl'), 'rb') as fin:
         fe_feature_names = pickle.load(fin)
     
-    with open(PROJECT_DIR.joinpath(PATH_PROCESSED, 'adv_valid_mask.pkl'), 'rb') as fin:
-        adv_valid_mask = pickle.load(fin)
-    
     
     train_share = int(.7 * X_train_sparse.shape[0])
     X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
@@ -84,20 +81,6 @@ def main():
     metrics['holdout'] = float(logit_holdout_score)
     if PARAMS['show_weights']:
         print('Feature weights of model on regular train part:')
-        show_feature_weights(logit, data_feature_names, fe_feature_names)
-    
-    # Making train and validation sets using examples mask from adversarial validation
-    X_adv_train = X_train_sparse[~adv_valid_mask]
-    X_adv_valid = X_train_sparse[adv_valid_mask]
-    y_adv_train = y[~adv_valid_mask]
-    y_adv_valid = y[adv_valid_mask]
-    
-    # Re-training and evaluaiton on constructed sets
-    logit.fit(X_adv_train, y_adv_train)
-    logit_adv_score = roc_auc_score(y_adv_valid, logit.predict_proba(X_adv_valid)[:, 1])
-    metrics['adv_valid'] = float(logit_adv_score)
-    if PARAMS['show_weights']:
-        print('Feature weights of model on adversarial train part:')
         show_feature_weights(logit, data_feature_names, fe_feature_names)
     
     if PARAMS['submission']['make']:
