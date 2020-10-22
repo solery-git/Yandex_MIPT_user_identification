@@ -22,8 +22,8 @@ featurize:
 evaluate:
     show_weights: False
     submission:
-        make: False
-        name: 'yorko_fix_5feat'
+        make: True
+        name: 'yorko_fix_5feat_0drop'
 
 compare:
-    with: 'f1e66a6'
+    with: '24cad61'

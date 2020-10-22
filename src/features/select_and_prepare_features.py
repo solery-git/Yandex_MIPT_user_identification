@@ -51,7 +51,7 @@ def sparsify_data(X, vectorizer_params, site_dic, train_part=None):
     X_text = [' '.join(map(id2site.get, row)) if len(row) > 0 else '' for row in X]
     #X_text = [' '.join(map(str, row)) for row in X]
     
-    default_sklearn_vparams = {'tokenizer': lambda s: s.split(), 'stop_words': []}
+    default_sklearn_vparams = {'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
     
     vparams = deepcopy(vectorizer_params)
     method = vparams.pop('method')
