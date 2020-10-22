@@ -20,7 +20,7 @@ evaluate:
     show_weights: False
     submission:
         make: False
-        name: 'yorko_nofix_2feat'
+        name: 'yorko_fix_2feat'
 
 compare:
     with: 'baseline'

@@ -59,17 +59,17 @@ def main():
         fe_feature_names = pickle.load(fin)
     
     
-    #train_share = int(.7 * X_train_sparse.shape[0])
-    #X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
-    #X_holdout, y_holdout  = X_train_sparse[train_share:, :], y[train_share:]
-    X_train, y_train = X_train_sparse, y
+    train_share = int(.7 * X_train_sparse.shape[0])
+    X_train, y_train = X_train_sparse[:train_share, :], y[:train_share]
+    X_holdout, y_holdout  = X_train_sparse[train_share:, :], y[train_share:]
     
     tss = TimeSeriesSplit(n_splits=10)
     metrics = {}
     
     # Cross-validation on chosen CV scheme
+    # we will use the whole set to compare with the results of public kernels
     logit = LogisticRegression(C=1, random_state=SEED, solver='liblinear')
-    logit_train_scores = cross_val_score(logit, X_train, y_train, cv=tss, scoring='roc_auc', n_jobs=1)
+    logit_train_scores = cross_val_score(logit, X_train_sparse, y, cv=tss, scoring='roc_auc', n_jobs=1)
     metrics['train_scores'] = {}
     for i, value in enumerate(logit_train_scores.tolist(), start=1):
         metrics['train_scores'][f'fold{i}'] = float(value)
@@ -77,9 +77,9 @@ def main():
     metrics['train_std'] = float(np.std(logit_train_scores))
     
     # Re-training on the whole train set and evaluation on holdout set
-    #logit.fit(X_train, y_train)
-    #logit_holdout_score = roc_auc_score(y_holdout, logit.predict_proba(X_holdout)[:, 1])
-    #metrics['holdout'] = float(logit_holdout_score)
+    logit.fit(X_train, y_train)
+    logit_holdout_score = roc_auc_score(y_holdout, logit.predict_proba(X_holdout)[:, 1])
+    metrics['holdout'] = float(logit_holdout_score)
     if PARAMS['show_weights']:
         print('Feature weights of model on regular train part:')
         show_feature_weights(logit, data_feature_names, fe_feature_names)
