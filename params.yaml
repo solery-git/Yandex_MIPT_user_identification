@@ -9,7 +9,7 @@ featurize:
     
     feature_types:
         prepared: []
-        categorical:
+        categorical: 
             - 'time_of_day'
         to_log: []
         to_scale_standard: 
@@ -22,8 +22,8 @@ featurize:
 evaluate:
     show_weights: False
     submission:
-        make: True
+        make: False
         name: 'yorko_fix_5feat_0drop'
 
 compare:
-    with: '24cad61'
+    with: '7ec945f'

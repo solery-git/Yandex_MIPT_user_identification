@@ -8,7 +8,7 @@ from collections import Counter
 from copy import deepcopy
 import numpy as np
 import pandas as pd
-from scipy.sparse import csr_matrix, hstack as sparse_hstack
+from scipy.sparse import csr_matrix, hstack as sparse_hstack, coo_matrix, issparse
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, MaxAbsScaler
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -42,14 +42,21 @@ class Doc2VecVectorizer():
 
 
 def csr_hstack(arglist):
-    return csr_matrix(sparse_hstack(arglist))
+    arglist_sparsified = [arg if issparse(arg) else csr_matrix(arg) for arg in arglist]
+    return csr_matrix(sparse_hstack(arglist_sparsified))
 
-def sparsify_data(X, vectorizer_params, site_dic, train_part=None):
+def encode_data(X, site_dic):
     id2site = {v:k for (k, v) in site_dic.items()}
     id2site[0] = 'unknown'
     
+    #X_text = [' '.join([f'{id2site[site_id]}_{time_of_day}' for site_id in row]) if len(row) > 0 else '' for row, time_of_day in zip(X, features['time_of_day'])]
     X_text = [' '.join(map(id2site.get, row)) if len(row) > 0 else '' for row in X]
     #X_text = [' '.join(map(str, row)) for row in X]
+    
+    return X_text
+
+def sparsify_data(X, vectorizer_params, site_dic, train_part=None):
+    X_text = encode_data(X, site_dic)
     
     default_sklearn_vparams = {'tokenizer': lambda s: s.split(), 'stop_words': ['unknown']}
     
