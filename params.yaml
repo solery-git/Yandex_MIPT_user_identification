@@ -6,6 +6,8 @@ featurize:
         - method: 'tfidf'
           ngram_range: [1, 5]
           max_features: 50000
+          sublinear_tf: True
+          use_idf: True
     
     feature_types:
         prepared: []
@@ -23,7 +25,7 @@ evaluate:
     show_weights: False
     submission:
         make: False
-        name: 'yorko_fix_5feat_0drop'
+        name: 'yorko_fix_5feat_0drop_subtf'
 
 compare:
     with: '7ec945f'

@@ -84,6 +84,7 @@ def main():
         print('Feature weights of model on regular train part:')
         show_feature_weights(logit, data_feature_names, fe_feature_names)
     
+    
     if PARAMS['submission']['make']:
         logit.fit(X_train_sparse, y)
         logit_test_proba = logit.predict_proba(X_test_sparse)[:, 1]
