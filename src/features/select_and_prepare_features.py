@@ -49,9 +49,7 @@ def encode_data(X, site_dic):
     id2site = {v:k for (k, v) in site_dic.items()}
     id2site[0] = 'unknown'
     
-    #X_text = [' '.join([f'{id2site[site_id]}_{time_of_day}' for site_id in row]) for row, time_of_day in zip(X, features['time_of_day'])]
     X_text = [' '.join(map(id2site.get, row)) for row in X]
-    #X_text = [' '.join(map(str, row)) for row in X]
     
     return X_text
 
