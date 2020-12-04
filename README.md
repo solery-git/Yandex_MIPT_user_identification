@@ -1,7 +1,9 @@
 user_identification
 ==============================
 
-User identification based on session of visited websites.
+User identification based on session of visited websites. Final project of [Yandex&MIPT specialization](https://www.coursera.org/specializations/machine-learning-data-analysis) with a related kaggle competition ["Catch Me If You Can (Alice)"](https://www.kaggle.com/c/catch-me-if-you-can-intruder-detection-through-webpage-session-tracking2).
+
+Reports are available in `notebooks\`. Model training and evaluation pipeline is made using [DVC](https://dvc.org); use `dvc repro` to reproduce pipeline steps. Model parameters can be changed in `params.yaml`.
 
 Project Organization
 ------------
